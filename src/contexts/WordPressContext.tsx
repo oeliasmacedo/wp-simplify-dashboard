@@ -1,16 +1,27 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { WordPressSite, WordPressConnectionCredentials } from '@/types/wordpress';
+import { WordPressSite, WordPressConnectionCredentials, WordPressPost, WordPressPage, WordPressUser, WordPressPlugin, WordPressTheme } from '@/types/wordpress';
 import { toast } from '@/hooks/use-toast';
 
 interface WordPressContextType {
   sites: WordPressSite[];
   currentSite: WordPressSite | null;
   isConnecting: boolean;
+  isLoading: boolean;
+  posts: WordPressPost[];
+  pages: WordPressPage[];
+  users: WordPressUser[];
+  plugins: WordPressPlugin[];
+  themes: WordPressTheme[];
   connectSite: (credentials: WordPressConnectionCredentials) => Promise<boolean>;
   disconnectSite: (siteId: string) => void;
   switchSite: (siteId: string) => void;
   testConnection: (credentials: WordPressConnectionCredentials) => Promise<boolean>;
+  fetchPosts: () => Promise<WordPressPost[]>;
+  fetchPages: () => Promise<WordPressPage[]>;
+  fetchUsers: () => Promise<WordPressUser[]>;
+  fetchPlugins: () => Promise<WordPressPlugin[]>;
+  fetchThemes: () => Promise<WordPressTheme[]>;
 }
 
 const WordPressContext = createContext<WordPressContextType | undefined>(undefined);
@@ -31,6 +42,14 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
   });
   const [currentSite, setCurrentSite] = useState<WordPressSite | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // State for WordPress data
+  const [posts, setPosts] = useState<WordPressPost[]>([]);
+  const [pages, setPages] = useState<WordPressPage[]>([]);
+  const [users, setUsers] = useState<WordPressUser[]>([]);
+  const [plugins, setPlugins] = useState<WordPressPlugin[]>([]);
+  const [themes, setThemes] = useState<WordPressTheme[]>([]);
 
   // Save sites to localStorage when they change
   useEffect(() => {
@@ -41,6 +60,69 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
       setCurrentSite(sites[0]);
     }
   }, [sites]);
+
+  // Fetch initial data when currentSite changes
+  useEffect(() => {
+    if (currentSite) {
+      fetchPosts();
+      fetchPages();
+      fetchUsers();
+      fetchPlugins();
+      fetchThemes();
+    }
+  }, [currentSite]);
+
+  // Prepare API request headers based on auth type
+  const getHeaders = () => {
+    if (!currentSite) return {};
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (currentSite.authType === 'application_password') {
+      headers.Authorization = `Basic ${btoa(`${currentSite.username}:${currentSite.applicationPassword}`)}`;
+    } else if (currentSite.authType === 'jwt' && currentSite.token) {
+      headers.Authorization = `Bearer ${currentSite.token}`;
+    }
+    
+    return headers;
+  };
+
+  // Helper function to make API requests
+  const apiRequest = async <T,>(endpoint: string): Promise<T> => {
+    if (!currentSite) {
+      throw new Error('No WordPress site selected');
+    }
+
+    const baseUrl = currentSite.url.endsWith('/') 
+      ? currentSite.url.slice(0, -1) 
+      : currentSite.url;
+    
+    const url = `${baseUrl}/wp-json/wp/v2/${endpoint}`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed: ${response.status} ${errorText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error(`Error fetching ${endpoint}:`, error);
+      toast({
+        title: "WordPress API Error",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
 
   const testConnection = async (credentials: WordPressConnectionCredentials): Promise<boolean> => {
     try {
@@ -151,16 +233,107 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
     }
   };
 
+  // API Data Fetching Functions
+  const fetchPosts = async (): Promise<WordPressPost[]> => {
+    if (!currentSite) return [];
+    setIsLoading(true);
+    
+    try {
+      const result = await apiRequest<WordPressPost[]>('posts?per_page=100');
+      setPosts(result);
+      return result;
+    } catch (error) {
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchPages = async (): Promise<WordPressPage[]> => {
+    if (!currentSite) return [];
+    setIsLoading(true);
+    
+    try {
+      const result = await apiRequest<WordPressPage[]>('pages?per_page=100');
+      setPages(result);
+      return result;
+    } catch (error) {
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchUsers = async (): Promise<WordPressUser[]> => {
+    if (!currentSite) return [];
+    setIsLoading(true);
+    
+    try {
+      const result = await apiRequest<WordPressUser[]>('users?per_page=100');
+      setUsers(result);
+      return result;
+    } catch (error) {
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchPlugins = async (): Promise<WordPressPlugin[]> => {
+    if (!currentSite) return [];
+    setIsLoading(true);
+    
+    try {
+      const result = await apiRequest<WordPressPlugin[]>('plugins?per_page=100');
+      setPlugins(result);
+      return result;
+    } catch (error) {
+      // Note: Plugin API endpoint might require additional permissions
+      console.log('Plugins API might require admin access or additional permissions');
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchThemes = async (): Promise<WordPressTheme[]> => {
+    if (!currentSite) return [];
+    setIsLoading(true);
+    
+    try {
+      const result = await apiRequest<WordPressTheme[]>('themes?per_page=100');
+      setThemes(result);
+      return result;
+    } catch (error) {
+      // Note: Theme API endpoint might require additional permissions
+      console.log('Themes API might require admin access or additional permissions');
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <WordPressContext.Provider
       value={{
         sites,
         currentSite,
         isConnecting,
+        isLoading,
+        posts,
+        pages,
+        users,
+        plugins,
+        themes,
         connectSite,
         disconnectSite,
         switchSite,
         testConnection,
+        fetchPosts,
+        fetchPages,
+        fetchUsers,
+        fetchPlugins,
+        fetchThemes,
       }}
     >
       {children}
