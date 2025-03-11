@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ContentManager from "./pages/ContentManager";
 import UserManager from "./pages/UserManager";
+import LMSManager from "./pages/LMSManager";
 import NotFound from "./pages/NotFound";
 import { WordPressProvider } from "./contexts/WordPressContext";
 
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<Dashboard />} />
             <Route path="/content" element={<ContentManager />} />
             <Route path="/users" element={<UserManager />} />
+            <Route path="/lms" element={<LMSManager />} />
             {/* Add additional routes as they're implemented */}
             {/* <Route path="/statistics" element={<Statistics />} /> */}
             {/* <Route path="/backups" element={<Backups />} /> */}

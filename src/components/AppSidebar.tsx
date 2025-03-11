@@ -22,7 +22,8 @@ import {
   Palette, 
   Share2, 
   Settings, 
-  LogOut 
+  LogOut,
+  BookOpen 
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,11 @@ const menuItems = [
     title: "Users",
     path: "/users",
     icon: Users
+  },
+  {
+    title: "LMS Manager",
+    path: "/lms",
+    icon: BookOpen
   },
   {
     title: "Statistics",

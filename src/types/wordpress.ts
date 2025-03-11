@@ -1,3 +1,4 @@
+
 export interface WordPressSite {
   id: string;
   name: string;
@@ -203,4 +204,83 @@ export interface RecentActivity {
   user: string;
   timestamp: Date;
   action: 'create' | 'update' | 'delete';
+}
+
+// LMS Course
+export interface WordPressCourse {
+  id: number;
+  title: {
+    rendered: string;
+  };
+  content: {
+    rendered: string;
+    protected: boolean;
+  };
+  excerpt: {
+    rendered: string;
+  };
+  status: string;
+  date: string;
+  modified: string;
+  author: number;
+  featured_media: number;
+  link: string;
+  slug: string;
+  // LMS specific fields
+  course_duration?: string;
+  enrolled_students?: number;
+  price?: string;
+  sale_price?: string;
+  categories?: number[];
+  difficulty_level?: string;
+  instructor?: number;
+}
+
+// LMS Student
+export interface WordPressStudent extends WordPressUser {
+  enrolled_courses?: number[];
+  completed_courses?: number[];
+  progress?: {
+    course_id: number;
+    progress_percentage: number;
+    last_activity: string;
+  }[];
+}
+
+// LMS Lesson
+export interface WordPressLesson {
+  id: number;
+  title: {
+    rendered: string;
+  };
+  content: {
+    rendered: string;
+    protected: boolean;
+  };
+  status: string;
+  course_id: number;
+  lesson_order: number;
+  lesson_type: 'video' | 'text' | 'quiz' | 'assignment';
+  duration: string;
+}
+
+// LMS Quiz
+export interface WordPressQuiz {
+  id: number;
+  title: {
+    rendered: string;
+  };
+  description?: string;
+  course_id: number;
+  time_limit?: number; // in minutes
+  passing_grade?: number; // percentage
+  max_attempts?: number;
+  questions?: {
+    id: number;
+    type: 'multiple-choice' | 'true-false' | 'essay' | 'fill-blank';
+    question_text: string;
+    options?: string[];
+    correct_answer?: string | string[];
+    points: number;
+  }[];
 }
