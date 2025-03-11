@@ -1,23 +1,25 @@
 
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart3 } from "lucide-react";
 
-// Mock data for site traffic
-const trafficData = [
-  { date: "3/1", visitors: 4000, pageviews: 8000 },
-  { date: "3/5", visitors: 3000, pageviews: 6500 },
-  { date: "3/10", visitors: 5000, pageviews: 9800 },
-  { date: "3/15", visitors: 2780, pageviews: 7908 },
-  { date: "3/20", visitors: 4890, pageviews: 12800 },
-  { date: "3/25", visitors: 5390, pageviews: 14300 },
-  { date: "3/30", visitors: 6490, pageviews: 15900 },
-];
+interface TrafficChartProps {
+  data: {
+    date: string;
+    visitors: number;
+    pageviews: number;
+  }[];
+}
 
-export function TrafficChart() {
+export function TrafficChart({ data = [] }: TrafficChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Site Traffic</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5" />
+          <span>Site Traffic</span>
+        </CardTitle>
         <CardDescription>
           Visitors and pageviews over time
         </CardDescription>
@@ -26,7 +28,7 @@ export function TrafficChart() {
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={trafficData}
+              data={data}
               margin={{
                 top: 10,
                 right: 30,
@@ -38,6 +40,7 @@ export function TrafficChart() {
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
+              <Legend />
               <Area 
                 type="monotone" 
                 dataKey="visitors" 
@@ -45,6 +48,7 @@ export function TrafficChart() {
                 stroke="#8B5CF6" 
                 fill="#8B5CF6" 
                 fillOpacity={0.6} 
+                name="Visitors"
               />
               <Area 
                 type="monotone" 
@@ -53,6 +57,7 @@ export function TrafficChart() {
                 stroke="#0EA5E9" 
                 fill="#0EA5E9" 
                 fillOpacity={0.3} 
+                name="Pageviews"
               />
             </AreaChart>
           </ResponsiveContainer>

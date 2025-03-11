@@ -1,6 +1,14 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { WordPressSite, WordPressConnectionCredentials, WordPressPost, WordPressPage, WordPressUser, WordPressPlugin, WordPressTheme } from '@/types/wordpress';
+import { 
+  WordPressSite, 
+  WordPressConnectionCredentials, 
+  WordPressPost, 
+  WordPressPage, 
+  WordPressUser, 
+  WordPressPlugin, 
+  WordPressTheme,
+  ContentOverview
+} from '@/types/wordpress';
 import { toast } from '@/hooks/use-toast';
 
 interface WordPressContextType {
@@ -22,6 +30,7 @@ interface WordPressContextType {
   fetchUsers: () => Promise<WordPressUser[]>;
   fetchPlugins: () => Promise<WordPressPlugin[]>;
   fetchThemes: () => Promise<WordPressTheme[]>;
+  getContentOverview: () => ContentOverview;
 }
 
 const WordPressContext = createContext<WordPressContextType | undefined>(undefined);
@@ -36,7 +45,6 @@ export const useWordPress = () => {
 
 export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [sites, setSites] = useState<WordPressSite[]>(() => {
-    // Load from localStorage if available
     const savedSites = localStorage.getItem('wordpressSites');
     return savedSites ? JSON.parse(savedSites) : [];
   });
@@ -44,24 +52,20 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
   const [isConnecting, setIsConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  // State for WordPress data
   const [posts, setPosts] = useState<WordPressPost[]>([]);
   const [pages, setPages] = useState<WordPressPage[]>([]);
   const [users, setUsers] = useState<WordPressUser[]>([]);
   const [plugins, setPlugins] = useState<WordPressPlugin[]>([]);
   const [themes, setThemes] = useState<WordPressTheme[]>([]);
 
-  // Save sites to localStorage when they change
   useEffect(() => {
     localStorage.setItem('wordpressSites', JSON.stringify(sites));
     
-    // Set current site to first site if none selected
     if (sites.length > 0 && !currentSite) {
       setCurrentSite(sites[0]);
     }
   }, [sites]);
 
-  // Fetch initial data when currentSite changes
   useEffect(() => {
     if (currentSite) {
       fetchPosts();
@@ -72,7 +76,6 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
     }
   }, [currentSite]);
 
-  // Prepare API request headers based on auth type
   const getHeaders = () => {
     if (!currentSite) return {};
 
@@ -89,7 +92,6 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
     return headers;
   };
 
-  // Helper function to make API requests
   const apiRequest = async <T,>(endpoint: string): Promise<T> => {
     if (!currentSite) {
       throw new Error('No WordPress site selected');
@@ -126,7 +128,6 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
 
   const testConnection = async (credentials: WordPressConnectionCredentials): Promise<boolean> => {
     try {
-      // Format the site URL correctly
       const baseUrl = credentials.url.endsWith('/') 
         ? credentials.url.slice(0, -1) 
         : credentials.url;
@@ -177,7 +178,6 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
         return false;
       }
       
-      // Create new site object
       const newSite: WordPressSite = {
         id: crypto.randomUUID(),
         name: new URL(credentials.url).hostname,
@@ -233,7 +233,17 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
     }
   };
 
-  // API Data Fetching Functions
+  const getContentOverview = (): ContentOverview => {
+    return {
+      posts: posts.length,
+      pages: pages.length,
+      users: users.length,
+      comments: 248,
+      categories: 12,
+      tags: 56,
+    };
+  };
+
   const fetchPosts = async (): Promise<WordPressPost[]> => {
     if (!currentSite) return [];
     setIsLoading(true);
@@ -288,7 +298,6 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
       setPlugins(result);
       return result;
     } catch (error) {
-      // Note: Plugin API endpoint might require additional permissions
       console.log('Plugins API might require admin access or additional permissions');
       return [];
     } finally {
@@ -305,7 +314,6 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
       setThemes(result);
       return result;
     } catch (error) {
-      // Note: Theme API endpoint might require additional permissions
       console.log('Themes API might require admin access or additional permissions');
       return [];
     } finally {
@@ -334,6 +342,7 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
         fetchUsers,
         fetchPlugins,
         fetchThemes,
+        getContentOverview,
       }}
     >
       {children}

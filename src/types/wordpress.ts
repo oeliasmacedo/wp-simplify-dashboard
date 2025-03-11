@@ -1,4 +1,3 @@
-
 export interface WordPressSite {
   id: string;
   name: string;
@@ -10,6 +9,12 @@ export interface WordPressSite {
   authType: 'application_password' | 'jwt';
   isConnected: boolean;
   lastConnected?: Date;
+  // Site metrics
+  siteHealth?: SiteHealthMetrics;
+  trafficAnalytics?: TrafficAnalytics;
+  storageUsage?: StorageUsage;
+  seoHealth?: SEOHealth;
+  securityOverview?: SecurityOverview;
 }
 
 export interface WordPressConnectionCredentials {
@@ -18,6 +23,73 @@ export interface WordPressConnectionCredentials {
   applicationPassword?: string;
   token?: string;
   authType: 'application_password' | 'jwt';
+}
+
+// Site Health Metrics
+export interface SiteHealthMetrics {
+  uptime: number; // percentage
+  speed: number; // in ms
+  overallStatus: 'good' | 'warning' | 'critical';
+  lastChecked: Date;
+  issues: {
+    good: number;
+    warning: number;
+    critical: number;
+  };
+}
+
+// Traffic Analytics
+export interface TrafficAnalytics {
+  totalVisits: number;
+  uniqueUsers: number;
+  referralSources: {
+    source: string;
+    count: number;
+  }[];
+  timeframe: 'day' | 'week' | 'month';
+  data: {
+    date: string;
+    visitors: number;
+    pageviews: number;
+  }[];
+}
+
+// Storage Usage
+export interface StorageUsage {
+  total: number; // in MB
+  media: number;
+  database: number;
+  plugins: number;
+  themes: number;
+  other: number;
+}
+
+// SEO Health
+export interface SEOHealth {
+  score: number; // 0-100
+  issues: {
+    severity: 'good' | 'warning' | 'error';
+    message: string;
+  }[];
+  metrics: {
+    pageSpeed: number;
+    missingMetaTags: number;
+    brokenLinks: number;
+    seoFriendlyUrls: number;
+  };
+}
+
+// Security Overview
+export interface SecurityOverview {
+  score: number; // 0-100
+  loginAttempts: number;
+  blockedAttacks: number;
+  vulnerabilities: number;
+  lastScan: Date;
+  issues: {
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    message: string;
+  }[];
 }
 
 // WordPress Post type
@@ -111,4 +183,24 @@ export interface WordPressTheme {
   status: string;
   tags: string[];
   text_domain: string;
+}
+
+// Content Overview
+export interface ContentOverview {
+  posts: number;
+  pages: number;
+  users: number;
+  comments: number;
+  categories: number;
+  tags: number;
+}
+
+// Recent Activity
+export interface RecentActivity {
+  id: number;
+  type: 'post' | 'page' | 'comment' | 'user' | 'plugin' | 'theme';
+  title: string;
+  user: string;
+  timestamp: Date;
+  action: 'create' | 'update' | 'delete';
 }
