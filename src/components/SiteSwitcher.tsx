@@ -15,29 +15,26 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-// Mock data for website list
-const websites = [
-  {
-    value: "example-one",
-    label: "Example Site One",
-    url: "example-one.com"
-  },
-  {
-    value: "example-two",
-    label: "Example Site Two",
-    url: "example-two.com"
-  },
-  {
-    value: "example-three",
-    label: "Example Site Three",
-    url: "example-three.com"
-  },
-];
+import { useWordPress } from "@/contexts/WordPressContext";
 
 export function SiteSwitcher() {
+  const { sites, currentSite, switchSite } = useWordPress();
   const [open, setOpen] = useState(false);
-  const [selectedSite, setSelectedSite] = useState(websites[0]);
+
+  // If no sites are connected, show a placeholder
+  if (!sites.length) {
+    return (
+      <Button
+        variant="ghost"
+        className="w-full justify-between text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      >
+        <div className="flex items-center">
+          <Globe className="mr-2 h-5 w-5" />
+          <span className="font-medium">No sites connected</span>
+        </div>
+      </Button>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -50,7 +47,9 @@ export function SiteSwitcher() {
         >
           <div className="flex items-center">
             <Globe className="mr-2 h-5 w-5" />
-            <span className="font-medium">{selectedSite.label}</span>
+            <span className="font-medium truncate">
+              {currentSite?.name || sites[0].name}
+            </span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -59,27 +58,27 @@ export function SiteSwitcher() {
         <Command>
           <CommandInput placeholder="Search site..." />
           <CommandEmpty>No site found.</CommandEmpty>
-          <CommandGroup heading="My Websites">
-            {websites.map((site) => (
+          <CommandGroup heading="My WordPress Sites">
+            {sites.map((site) => (
               <CommandItem
-                key={site.value}
-                value={site.value}
+                key={site.id}
+                value={site.id}
                 onSelect={() => {
-                  setSelectedSite(site);
+                  switchSite(site.id);
                   setOpen(false);
                 }}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    selectedSite.value === site.value
+                    currentSite?.id === site.id
                       ? "opacity-100"
                       : "opacity-0"
                   )}
                 />
                 <div className="flex flex-col">
-                  <span>{site.label}</span>
-                  <span className="text-xs text-muted-foreground">{site.url}</span>
+                  <span>{site.name}</span>
+                  <span className="text-xs text-muted-foreground truncate">{site.url}</span>
                 </div>
               </CommandItem>
             ))}

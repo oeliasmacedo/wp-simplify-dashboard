@@ -8,29 +8,32 @@ import Dashboard from "./pages/Dashboard";
 import ContentManager from "./pages/ContentManager";
 import UserManager from "./pages/UserManager";
 import NotFound from "./pages/NotFound";
+import { WordPressProvider } from "./contexts/WordPressContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/content" element={<ContentManager />} />
-          <Route path="/users" element={<UserManager />} />
-          {/* Add additional routes as they're implemented */}
-          {/* <Route path="/statistics" element={<Statistics />} /> */}
-          {/* <Route path="/backups" element={<Backups />} /> */}
-          {/* <Route path="/extensions" element={<Extensions />} /> */}
-          {/* <Route path="/branding" element={<Branding />} /> */}
-          {/* <Route path="/integrations" element={<Integrations />} /> */}
-          {/* <Route path="/settings" element={<Settings />} /> */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <WordPressProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/content" element={<ContentManager />} />
+            <Route path="/users" element={<UserManager />} />
+            {/* Add additional routes as they're implemented */}
+            {/* <Route path="/statistics" element={<Statistics />} /> */}
+            {/* <Route path="/backups" element={<Backups />} /> */}
+            {/* <Route path="/extensions" element={<Extensions />} /> */}
+            {/* <Route path="/branding" element={<Branding />} /> */}
+            {/* <Route path="/integrations" element={<Integrations />} /> */}
+            {/* <Route path="/settings" element={<Settings />} /> */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </WordPressProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
