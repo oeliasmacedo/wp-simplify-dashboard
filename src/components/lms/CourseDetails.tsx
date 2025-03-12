@@ -16,7 +16,8 @@ import {
   BookOpen,
   RefreshCw,
   Award,
-  BarChart3
+  BarChart3,
+  Pencil
 } from "lucide-react";
 import { WordPressCourse, WordPressUser } from "@/types/wordpress";
 import LessonManager from "./LessonManager";
@@ -251,7 +252,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ courseId, onBack }) => {
                             </Avatar>
                             <div>
                               <p className="font-medium">{student.name}</p>
-                              <p className="text-xs text-muted-foreground">{student.email || student.slug}</p>
+                              <p className="text-xs text-muted-foreground">{student.slug}</p>
                             </div>
                           </div>
                         </td>
