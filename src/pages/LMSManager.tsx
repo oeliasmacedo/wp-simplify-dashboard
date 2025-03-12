@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,12 +18,15 @@ import {
   Users,
   GraduationCap,
   BookmarkPlus,
-  Clock
+  Clock,
+  Eye
 } from "lucide-react";
 import { useWordPress } from "@/contexts/WordPressContext";
 import { ConnectSiteWizard } from "@/components/ConnectSiteWizard";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import CourseDetails from "@/components/lms/CourseDetails";
+import LessonManager from "@/components/lms/LessonManager";
 
 const LMSManager = () => {
   const { 
@@ -37,6 +39,8 @@ const LMSManager = () => {
   } = useWordPress();
   const [searchTerm, setSearchTerm] = useState("");
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [activeView, setActiveView] = useState<'courses' | 'students' | 'lessons'>('courses');
 
   // Filter content based on search term
   const filteredCourses = courses.filter(course => 
@@ -52,12 +56,22 @@ const LMSManager = () => {
     await Promise.all([fetchCourses(), fetchStudents()]);
   };
 
+  // View course details
+  const handleViewCourse = (courseId: number) => {
+    setSelectedCourseId(courseId);
+  };
+
+  // Go back to course list
+  const handleBackToCourses = () => {
+    setSelectedCourseId(null);
+  };
+
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">LMS Manager</h1>
         <div className="flex gap-2">
-          {currentSite && (
+          {currentSite && !selectedCourseId && (
             <Button variant="outline" onClick={handleRefresh} className="gap-2">
               <RefreshCw className="h-4 w-4" />
               <span>Refresh</span>
@@ -83,8 +97,15 @@ const LMSManager = () => {
             <span>Connect WordPress Site</span>
           </Button>
         </div>
+      ) : selectedCourseId ? (
+        <CourseDetails courseId={selectedCourseId} onBack={handleBackToCourses} />
       ) : (
-        <Tabs defaultValue="courses" className="space-y-4">
+        <Tabs 
+          defaultValue={activeView} 
+          value={activeView}
+          onValueChange={(value) => setActiveView(value as 'courses' | 'students' | 'lessons')}
+          className="space-y-4"
+        >
           <div className="flex items-center justify-between">
             <TabsList>
               <TabsTrigger value="courses" className="flex items-center gap-2">
@@ -94,6 +115,10 @@ const LMSManager = () => {
               <TabsTrigger value="students" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 <span>Students</span>
+              </TabsTrigger>
+              <TabsTrigger value="lessons" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                <span>All Content</span>
               </TabsTrigger>
             </TabsList>
 
@@ -138,6 +163,7 @@ const LMSManager = () => {
             ) : (
               <CourseTable 
                 courses={filteredCourses}
+                onViewCourse={handleViewCourse}
               />
             )}
           </TabsContent>
@@ -150,6 +176,10 @@ const LMSManager = () => {
                 students={filteredStudents}
               />
             )}
+          </TabsContent>
+          
+          <TabsContent value="lessons">
+            <LessonManager />
           </TabsContent>
         </Tabs>
       )}
@@ -184,7 +214,12 @@ const DashboardMetricCard = ({ title, value, icon }: DashboardMetricCardProps) =
   );
 };
 
-const CourseTable = ({ courses }) => {
+type CourseTableProps = {
+  courses: any[];
+  onViewCourse: (courseId: number) => void;
+};
+
+const CourseTable = ({ courses, onViewCourse }: CourseTableProps) => {
   if (courses.length === 0) {
     return (
       <div className="rounded-md border p-8 text-center">
@@ -246,6 +281,13 @@ const CourseTable = ({ courses }) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                      className="flex items-center gap-2"
+                      onClick={() => onViewCourse(course.id)}
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>View Details</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="flex items-center gap-2">
                       <Pencil className="h-4 w-4" />
                       <span>Edit</span>
@@ -254,7 +296,7 @@ const CourseTable = ({ courses }) => {
                       <a href={course.link} target="_blank" rel="noopener noreferrer" 
                         className="flex items-center gap-2 w-full">
                         <BookOpen className="h-4 w-4" />
-                        <span>View</span>
+                        <span>View on Site</span>
                       </a>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="flex items-center gap-2 text-destructive">
