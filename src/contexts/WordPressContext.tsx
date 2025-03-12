@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   WordPressSite, 
@@ -360,7 +361,7 @@ export const WordPressProvider: React.FC<{children: React.ReactNode}> = ({ child
           
           const allPosts = await fetchPosts();
           const coursePosts = allPosts.filter(post => 
-            post.categories?.includes(/* course category ID, could be dynamic */) || 
+            post.categories?.includes(1) || // Using 1 as a default course category ID
             post.title.rendered.toLowerCase().includes('course')
           );
           

@@ -199,7 +199,7 @@ const CourseTable = ({ courses }) => {
     try {
       return format(new Date(dateString), 'yyyy-MM-dd');
     } catch (e) {
-      return dateString;
+      return dateString || '';
     }
   };
 
@@ -303,7 +303,7 @@ const StudentTable = ({ students }) => {
                   <div className="w-8 h-8 rounded-full bg-primary/10 mr-2 flex items-center justify-center">
                     {student.avatar_urls && Object.values(student.avatar_urls)[0] ? (
                       <img 
-                        src={Object.values(student.avatar_urls)[0]} 
+                        src={Object.values(student.avatar_urls)[0].toString()} 
                         alt={student.name} 
                         className="w-8 h-8 rounded-full"
                       />
